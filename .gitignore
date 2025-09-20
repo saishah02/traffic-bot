@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 *.log
 .env
+
+echo "gps_project/db.sqlite3" >> .gitignore
+git add .gitignore
+git commit -m "Ignore db.sqlite3 to prevent rebase issues"
