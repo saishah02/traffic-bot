@@ -35,3 +35,14 @@ jobs:
   uses: actions/checkout@v3
   with:
     fetch-depth: 0
+
+- name: Checkout code
+  uses: actions/checkout@v3
+  with:
+    fetch-depth: 0
+
+- name: Check for requirements.txt
+  run: test -f requirements.txt && echo "✅ Found requirements.txt" || echo "❌ Missing requirements.txt"
+
+- name: Install dependencies
+  run: pip install -r requirements.txt
