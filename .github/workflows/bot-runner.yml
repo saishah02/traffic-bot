@@ -12,6 +12,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Show current directory
+      run: pwd
+
+    - name: List files
+      run: ls -la
+
+    - name: Check for requirements.txt
+      run: test -f requirements.txt && echo "✅ Found requirements.txt" || echo "❌ Missing requirements.txt"
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -19,30 +30,7 @@ jobs:
         python-version: '3.10'
 
     - name: Install dependencies
-      run: pip install -r gps_project/requirements.txt
-
+      run: pip install -r requirements.txt
 
     - name: Run bot
       run: python bot.py
-
-      - name: Show current directory
-  run: pwd
-
-- name: List files
-  run: ls -la
-
-  - name: Checkout code
-  uses: actions/checkout@v3
-  with:
-    fetch-depth: 0
-
-- name: Checkout code
-  uses: actions/checkout@v3
-  with:
-    fetch-depth: 0
-
-- name: Check for requirements.txt
-  run: test -f requirements.txt && echo "✅ Found requirements.txt" || echo "❌ Missing requirements.txt"
-
-- name: Install dependencies
-  run: pip install -r requirements.txt
