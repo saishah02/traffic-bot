@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <title>Gambar Trafik Terkini</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <meta http-equiv="refresh" content="300"> <!-- Auto-refresh setiap 5 minit -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gambar Trafik Terkini</h1>
+
+    {% if latest_image %}
+        <div class="image-container">
+            <div class="info"><strong>Lokasi:</strong> {{ latest_image.lokasi }}</div>
+            <div class="info"><strong>Masa:</strong> {{ latest_image.masa }}</div>
+            <img src="{{ MEDIA_URL }}{{ latest_image.filename }}?v={{ latest_image.masa|slugify }}" alt="Trafik {{ latest_image.lokasi }}">
+        </div>
+    {% else %}
+        <p>Tiada gambar tersedia buat masa ini.</p>
+    {% endif %}
+    <script>
+    let lastRefresh = Date.now();
+
+    function updateGambar() {
+        $.getJSON("/latest-image/", function(data) {
+            if (data.latest_image) {
+                $("#gambar-container").html(`
+                    <div class="image-container">
+                        <div class="info"><strong>Lokasi:</strong> ${data.latest_image.lokasi}</div>
+                        <div class="info"><strong>Masa:</strong> ${data.latest_image.masa}</div>
+                        <img src="${data.latest_image.filename}?t=${new Date().getTime()}" alt="Trafik ${data.latest_image.lokasi}">
+                    </div>
+                `);
+                lastRefresh = Date.now();
+            } else {
+                $("#gambar-container").html("<p>Tiada gambar tersedia buat masa ini.</p>");
+            }
+        }).fail(function(jqxhr, textStatus, error) {
+            console.log("AJAX error:", textStatus, error);
+            $("#gambar-container").html("<p>Gagal ambil gambar dari server.</p>");
+        });
+    }
+
+    updateGambar(); // initial load
+    setInterval(updateGambar, 300000); // update setiap 5 minit
+
+    document.addEventListener("visibilitychange", function() {
+        if (document.visibilityState === "visible") {
+            const now = Date.now();
+            if (now - lastRefresh > 290000) { // lebih 4 minit 50 saat
+                updateGambar(); // paksa refresh bila balik ke tab
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

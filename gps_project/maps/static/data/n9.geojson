@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kesesakan": "tinggi"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [101.9424, 2.7258],
+          [101.9500, 2.7300]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kesesakan": "rendah"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [101.9300, 2.7200],
+          [101.9350, 2.7250]
+        ]
+      }
+    }
+  ]
+}
+{
+  "lokasi": "Seremban",
+  "masa": "2025-09-19 15:45:00",
+  "filename_trafik": "37409d88-370e-4281-86d3-820e185af0f2_trafik.png",
+  "filename_satelit": "37409d88-370e-4281-86d3-820e185af0f2_satelit.png"
+}
+$.getJSON("/latest-image/", function(data) {
+    // update gambar dalam page
+});
