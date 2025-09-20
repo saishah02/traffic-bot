@@ -24,3 +24,9 @@ jobs:
 
     - name: Run bot
       run: python bot.py
+
+      - name: Show current directory
+  run: pwd
+
+- name: List files
+  run: ls -la
