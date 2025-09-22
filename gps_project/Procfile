@@ -1,0 +1,1 @@
+web: gunicorn gps_project.wsgi
