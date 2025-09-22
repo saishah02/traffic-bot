@@ -1,7 +1,6 @@
 name: Scheduled Bot Runner
 
 on:
-  on:
   push:
     branches:
       - master
@@ -11,7 +10,7 @@ on:
 
 jobs:
   run-bot:
-    runs-on: windows-latest
+    runs-on: windows-latest  # GitHub uses Ubuntu runners by default
 
     steps:
       - name: Checkout code
@@ -20,14 +19,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'  # Matches your local version
+          python-version: '3.11'
 
       - name: Install dependencies
-<<<<<<< HEAD
         run: pip install -r requirements.txt || echo "No requirements.txt found"
-=======
-        run: pip install -r gps_project/requirements.txt || echo "No requirements.txt found"
->>>>>>> a05829737775900e5e4b40ab58bbdc7a5b3819c8
+
+      - name: Install requests manually (if not in requirements.txt)
+        run: pip install requests
 
       - name: Run bot script
         run: python bot.py
@@ -50,8 +48,4 @@ except Exception as e:
         run: ls -la
 
       - name: Print current UTC time
-<<<<<<< HEAD
         run: date -u
-=======
-        run: date -u
->>>>>>> a05829737775900e5e4b40ab58bbdc7a5b3819c8
