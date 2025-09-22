@@ -26,15 +26,16 @@ jobs:
           chcp 65001
           echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
 
-      - name: Install dependencies
+      - name: Install dependencies (with fallback)
+        shell: powershell
         run: |
-          if exist requirements.txt (
+          if (Test-Path "requirements.txt") {
             pip install --use-deprecated=legacy-resolver -r requirements.txt
-          ) else (
-            echo "⚠️ requirements.txt not found"
-          )
+          } else {
+            Write-Host "⚠️ requirements.txt not found"
+          }
 
-      - name: Install selenium manually (fallback)
+      - name: Install selenium manually (if not in requirements.txt)
         run: pip install selenium
 
       - name: Run screenshot bot
