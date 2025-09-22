@@ -82,7 +82,7 @@ STATICFILES_DIRS = [BASE_DIR / "maps/static"]
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+        default=os.environ.get('postgresql://traffic_bot_db_26pt_user:saIUMlaX2NPoXyMeRb76rgoR2jjnwwIi@dpg-d38cs0buibrs739n2vj0-a.singapore-postgres.render.com/traffic_bot_db_26pt'),
         conn_max_age=600,
         ssl_require=True
     )
