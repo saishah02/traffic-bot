@@ -26,6 +26,9 @@ jobs:
       - name: Set fallback DATABASE_URL for SQLite
         run: echo "DATABASE_URL=sqlite:///db.sqlite3" >> $GITHUB_ENV
 
+      - name: Install Django (just in case)
+        run: pip install Django
+        
       - name: Install dependencies
         run: |
           pip install --use-deprecated=legacy-resolver -r requirements.txt
