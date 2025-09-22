@@ -33,13 +33,7 @@ jobs:
       - name: Ping GitHub API
         run: |
           python -c "
-import requests
-try:
-    r = requests.get('https://api.github.com')
-    print(f'✅ GitHub API → {r.status_code}')
-except Exception as e:
-    print(f'❌ Error: {e}')
-"
+
 
       - name: Show current directory
         run: pwd
