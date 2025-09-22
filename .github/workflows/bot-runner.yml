@@ -1,15 +1,13 @@
-name: Scheduled Screenshot Bot
+name: Bot Runner (Server + Screenshot Bot)
 
 on:
   push:
     branches:
       - master
-  schedule:
-    - cron: '*/5 * * * *'  # Runs every 5 minutes
   workflow_dispatch:
 
 jobs:
-  run-screenshot-bot:
+  run-bot:
     runs-on: windows-2022
 
     steps:
@@ -21,46 +19,41 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Set UTF-8 encoding for emoji support
+      - name: Set UTF-8 encoding (fix emoji issue)
+        shell: pwsh
         run: |
           chcp 65001
-          echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
-
-      - name: Set fallback DATABASE_URL for SQLite
-        run: echo "DATABASE_URL=sqlite:///db.sqlite3" >> $GITHUB_ENV
+          echo "PYTHONIOENCODING=utf-8" >> $env:GITHUB_ENV
 
       - name: Install dependencies
         run: |
-          pip install --use-deprecated=legacy-resolver -r requirements.txt
+          pip install --upgrade pip
+          pip install -r requirements.txt
           pip install selenium
 
-      - name: Run server + screenshot bot concurrently
+      - name: Start Django server in background
         shell: pwsh
         run: |
-          Write-Host "🟢 Starting server and bot together..."
-
-          # Start Django/Flask server in background
+          Write-Host "🟢 Starting Django server in background..."
           Start-Job { python manage.py runserver 0.0.0.0:8000 }
-
-          # Wait a bit to let server boot
           Start-Sleep -Seconds 10
 
-          # Run screenshot bot (will run while server is alive)
+      - name: Run Screenshot Bot
+        shell: pwsh
+        run: |
+          Write-Host "📸 Running screenshot bot..."
           python gps_project/screenshots/screenshot_bot.py
 
-          # Stop background job (server) once bot finishes
+      - name: Stop Django server
+        shell: pwsh
+        run: |
+          Write-Host "🛑 Stopping Django server..."
           Get-Job | Stop-Job
           Get-Job | Remove-Job
-
           Write-Host "✅ Screenshot bot finished and server stopped."
 
       - name: List screenshot folder contents
+        shell: pwsh
         run: |
-          echo "📂 Listing screenshots folder:"
-          dir gps_project/screenshots/images
-
-      - name: Show screenshot file info
-        run: powershell -Command "Get-ChildItem gps_project/screenshots/images | Select-Object Name, Length, LastWriteTime"
-
-      - name: Print current UTC time
-        run: powershell -Command "Get-Date -Format u"
+          Write-Host "📂 Listing screenshots folder..."
+          Get-ChildItem gps_project/screenshots/images | Select-Object Name, Length, LastWriteTime
