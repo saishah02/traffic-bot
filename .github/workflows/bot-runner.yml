@@ -35,13 +35,18 @@ jobs:
           pip install selenium
 
       - name: Run screenshot bot
-        run: python gps_project/screenshots/screenshot_bot.py
+        run: |
+          echo "🟢 Starting screenshot bot..."
+          python gps_project/screenshots/screenshot_bot.py
+          echo "✅ Screenshot bot finished"
 
-      - name: Show current directory
-        run: pwd
+      - name: List screenshot folder contents
+        run: |
+          echo "📂 Listing screenshots folder:"
+          dir gps_project/screenshots/images
 
-      - name: List files
-        run: dir
+      - name: Show screenshot file info
+        run: powershell -Command "Get-ChildItem gps_project/screenshots/images | Select-Object Name, Length, LastWriteTime"
 
       - name: Print current UTC time
         run: powershell -Command "Get-Date -Format u"
