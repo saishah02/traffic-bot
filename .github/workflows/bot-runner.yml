@@ -26,17 +26,13 @@ jobs:
           chcp 65001
           echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
 
-      - name: Install dependencies (with fallback)
-        shell: powershell
-        run: |
-          if (Test-Path "requirements.txt") {
-            pip install --use-deprecated=legacy-resolver -r requirements.txt
-          } else {
-            Write-Host "⚠️ requirements.txt not found"
-          }
+      - name: Set fallback DATABASE_URL for SQLite
+        run: echo "DATABASE_URL=sqlite:///db.sqlite3" >> $GITHUB_ENV
 
-      - name: Install selenium manually (if not in requirements.txt)
-        run: pip install selenium
+      - name: Install dependencies
+        run: |
+          pip install --use-deprecated=legacy-resolver -r requirements.txt
+          pip install selenium
 
       - name: Run screenshot bot
         run: python gps_project/screenshots/screenshot_bot.py
