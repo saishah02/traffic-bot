@@ -38,3 +38,8 @@
 $.getJSON("/latest-image/", function(data) {
     // update gambar dalam page
 });
+{
+  "build": {
+    "builder": "RAILPACK"
+  }
+}
