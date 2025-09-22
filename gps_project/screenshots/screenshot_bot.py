@@ -6,9 +6,16 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import sqlite3
 
+# Safe print function (emoji jika supported, fallback kalau tak)
+def safe_print(msg, emoji=""):
+    try:
+        print(f"{emoji} {msg}")
+    except UnicodeEncodeError:
+        print(msg)
+
 # Database setup
 db_path = os.path.abspath("db.sqlite3")
-print("Bot is using DB path:", db_path)
+safe_print("Bot is using DB path: " + db_path, "📁")
 
 conn = sqlite3.connect(db_path)
 
@@ -43,7 +50,7 @@ options.add_argument("--mute-audio")
 try:
     driver = webdriver.Chrome(options=options)
 except Exception as driver_error:
-    print(f"Failed to start ChromeDriver: {driver_error}")
+    safe_print(f"Failed to start ChromeDriver: {driver_error}", "❌")
     sys.exit(1)
 
 lokasi = "Seremban"
@@ -54,7 +61,7 @@ URLS = {
     "satelit": "https://www.google.com/maps/@2.7258,101.9424,13z/data=!3m1!1e3",  # Satellite mode
 }
 
-print("Screenshot bot started...")
+safe_print("Screenshot bot started...", "🚦")
 
 MODES = ["trafik", "satelit"]  # You can add more modes later
 
@@ -70,7 +77,7 @@ while True:
             filepath = os.path.join(output_folder, filename)
 
             driver.save_screenshot(filepath)
-            print(f"Screenshot ({mode}) saved: {filepath}")
+            safe_print(f"Screenshot ({mode}) saved: {filepath}", "✅")
 
             # Save metadata to DB
             try:
@@ -81,14 +88,14 @@ while True:
                     gambar=os.path.join("images", filename),
                     mode=mode  # Make sure your model has this field
                 )
-                print(f"Metadata ({mode}) saved to DB.")
+                safe_print(f"Metadata ({mode}) saved to DB.", "🗂️")
             except Exception as db_error:
-                print(f"DB error ({mode}): {db_error}")
+                safe_print(f"DB error ({mode}): {db_error}", "❌")
 
             time.sleep(5)  # Short pause between modes
 
         except Exception as e:
-            print(f"Screenshot error ({mode}): {e}")
+            safe_print(f"Screenshot error ({mode}): {e}", "❌")
             time.sleep(60)
 
     time.sleep(300)  # Wait 5 minutes before next full cycle
