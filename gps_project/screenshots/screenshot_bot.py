@@ -4,9 +4,13 @@ import time
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import sqlite3
 
+print("📁 Bot is using DB path:", os.path.abspath("db.sqlite3"))
 # Force UTF-8 encoding to avoid UnicodeEncodeError
 sys.stdout.reconfigure(encoding='utf-8')
+conn = sqlite3.connect(db_path)
+
 
 # Setup Django environment
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
