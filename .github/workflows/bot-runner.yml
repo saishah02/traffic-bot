@@ -2,7 +2,7 @@ name: Scheduled Bot Runner
 
 on:
   schedule:
-    - cron: '0/5 * * * *'  # Runs every hour
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
   workflow_dispatch:
 
 jobs:
@@ -10,32 +10,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Show current directory
-      run: pwd
+      - name: Show current directory
+        run: pwd
 
-    - name: List files
-      run: ls -la
+      - name: List files
+        run: ls -la
 
-    - name: Check for requirements.txt
-      run: test -f requirements.txt && echo "✅ Found requirements.txt" || echo "❌ Missing requirements.txt"
+      - name: Check for requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            echo "✅ Found requirements.txt"
+          else
+            echo "❌ Missing requirements.txt"
+          fi
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-      url-to-hit: 'http://127.0.0.1:8000/'
-      expected-statuses: "200"  # Replace with your target URL
-    - name: Install dependencies
-      run: pip install -r requirements.txt
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Run bot
-      run: python bot.py
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "⚠️ Skipping dependency install: requirements.txt not found"
+          fi
+
+      - name: Run bot script
+        run: python bot.py
+
+      - name: Ping GitHub API with custom Python
+        run: |
+          python <<EOF
+import requests
+
+url = 'https://api.github.com'
+expected = [200]
+
+try:
+    response = requests.get(url)
+    if response.status_code in expected:
+        print(f'✅ {url} responded with {response.status_code}')
+    else:
+        print(f'⚠️ {url} responded with {response.status_code}, expected {expected}')
+except Exception as e:
+    print(f'❌ Failed to reach {url}: {e}')
+EOF
 
       - name: Print current UTC time
-  run: date -u
-
+        run: date -u
