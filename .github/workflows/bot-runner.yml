@@ -21,11 +21,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install dependencies from requirements.txt
         run: pip install -r requirements.txt || echo "No requirements.txt found"
 
-      - name: Install requests manually (if not in requirements.txt)
-        run: pip install requests
+      - name: Install selenium manually (if not in requirements.txt)
+        run: pip install selenium
 
       - name: Run screenshot bot
         run: python gps_project/screenshots/screenshot_bot.py
