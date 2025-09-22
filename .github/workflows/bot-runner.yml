@@ -34,3 +34,7 @@ jobs:
 
     - name: Run bot
       run: python bot.py
+
+      - name: Print current UTC time
+  run: date -u
+
