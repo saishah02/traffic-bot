@@ -5,6 +5,9 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+# Force UTF-8 encoding to avoid UnicodeEncodeError
+sys.stdout.reconfigure(encoding='utf-8')
+
 # Setup Django environment
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
@@ -32,9 +35,15 @@ options.add_argument("--disable-component-update")
 options.add_argument("--disable-notifications")
 options.add_argument("--mute-audio")
 
-driver = webdriver.Chrome(options=options)
+# Initialize Chrome driver
+try:
+    driver = webdriver.Chrome(options=options)
+except Exception as driver_error:
+    print(f"❌ Failed to start ChromeDriver: {driver_error}")
+    sys.exit(1)
 
 lokasi = "Seremban"
+
 # Define URLs for each mode
 URLS = {
     "trafik": "https://www.google.com/maps/@2.7258,101.9424,13z/data=!5m1!1e1",         # Traffic mode
