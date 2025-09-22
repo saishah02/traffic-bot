@@ -23,7 +23,11 @@ jobs:
           python-version: '3.11'  # Matches your local version
 
       - name: Install dependencies
+<<<<<<< HEAD
         run: pip install -r requirements.txt || echo "No requirements.txt found"
+=======
+        run: pip install -r gps_project/requirements.txt || echo "No requirements.txt found"
+>>>>>>> a05829737775900e5e4b40ab58bbdc7a5b3819c8
 
       - name: Run bot script
         run: python bot.py
@@ -46,4 +50,8 @@ except Exception as e:
         run: ls -la
 
       - name: Print current UTC time
+<<<<<<< HEAD
         run: date -u
+=======
+        run: date -u
+>>>>>>> a05829737775900e5e4b40ab58bbdc7a5b3819c8
