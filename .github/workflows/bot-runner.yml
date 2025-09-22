@@ -27,8 +27,11 @@ jobs:
       - name: Install requests manually (if not in requirements.txt)
         run: pip install requests
 
-      - name: Run bot script
+      - name: Run main bot
         run: python bot.py
+
+      - name: Run screenshot bot
+        run: python screenshots/screenshot_bot.py
 
       - name: Ping GitHub API
         run: |
