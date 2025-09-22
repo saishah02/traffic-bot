@@ -34,11 +34,25 @@ jobs:
           pip install --use-deprecated=legacy-resolver -r requirements.txt
           pip install selenium
 
-      - name: Run screenshot bot
+      - name: Run server + screenshot bot concurrently
+        shell: pwsh
         run: |
-          echo "🟢 Starting screenshot bot..."
+          Write-Host "🟢 Starting server and bot together..."
+
+          # Start Django/Flask server in background
+          Start-Job { python manage.py runserver 0.0.0.0:8000 }
+
+          # Wait a bit to let server boot
+          Start-Sleep -Seconds 10
+
+          # Run screenshot bot (will run while server is alive)
           python gps_project/screenshots/screenshot_bot.py
-          echo "✅ Screenshot bot finished"
+
+          # Stop background job (server) once bot finishes
+          Get-Job | Stop-Job
+          Get-Job | Remove-Job
+
+          Write-Host "✅ Screenshot bot finished and server stopped."
 
       - name: List screenshot folder contents
         run: |
