@@ -10,7 +10,7 @@ on:
 
 jobs:
   run-bot:
-    runs-on: windows-latest  # GitHub uses Ubuntu runners by default
+    runs-on: windows-2022 # GitHub uses Ubuntu runners by default
 
     steps:
       - name: Checkout code
