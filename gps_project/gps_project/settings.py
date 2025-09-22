@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-+=6_zh++u5nnsnn14=1j(fg35$mq$@=fizl_ej709n(4@c$qmy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'traffic-bot.onrender.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -80,12 +80,10 @@ STATICFILES_DIRS = [BASE_DIR / "maps/static"]
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('postgresql://traffic_bot_db_26pt_user:saIUMlaX2NPoXyMeRb76rgoR2jjnwwIi@dpg-d38cs0buibrs739n2vj0-a.singapore-postgres.render.com/traffic_bot_db_26pt'),
-        conn_max_age=600,
-        ssl_require=True
-    )
+    'default': dj_database_url.config(default='sqlite:///db.sqlite3')
 }
 
 
