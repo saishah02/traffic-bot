@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-+=6_zh++u5nnsnn14=1j(fg35$mq$@=fizl_ej709n(4@c$qmy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['traffic-bot.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'traffic-bot.onrender.com']
 
 
 # Application definition
