@@ -4,11 +4,21 @@ import time
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import sqlite3
 
-# Force UTF-8 encoding first (fix UnicodeEncodeError in Windows)
-sys.stdout.reconfigure(encoding="utf-8")
+# Force UTF-8 encoding to avoid UnicodeEncodeError (MESTI letak awal sebelum print)
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except AttributeError:
+    # Fallback untuk Python < 3.7
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-print("📁 Bot is using DB path:", os.path.abspath("db.sqlite3"))
+# Database setup
+db_path = os.path.abspath("db.sqlite3")
+print("📁 Bot is using DB path:", db_path)
+
+conn = sqlite3.connect(db_path)
 
 # Setup Django environment
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,8 +39,13 @@ os.makedirs(output_folder, exist_ok=True)
 options = Options()
 options.add_argument("--headless=new")
 options.add_argument("--window-size=1920,1080")
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
+options.add_argument("--disable-background-networking")
+options.add_argument("--disable-default-apps")
+options.add_argument("--disable-sync")
+options.add_argument("--disable-extensions")
+options.add_argument("--disable-component-update")
+options.add_argument("--disable-notifications")
+options.add_argument("--mute-audio")
 
 # Initialize Chrome driver
 try:
@@ -43,41 +58,45 @@ lokasi = "Seremban"
 
 # Define URLs for each mode
 URLS = {
-    "trafik": "https://www.google.com/maps/@2.7258,101.9424,13z/data=!5m1!1e1",
-    "satelit": "https://www.google.com/maps/@2.7258,101.9424,13z/data=!3m1!1e3",
+    "trafik": "https://www.google.com/maps/@2.7258,101.9424,13z/data=!5m1!1e1",  # Traffic mode
+    "satelit": "https://www.google.com/maps/@2.7258,101.9424,13z/data=!3m1!1e3",  # Satellite mode
 }
 
 print("🚦 Screenshot bot started...")
 
-MODES = ["trafik", "satelit"]
+MODES = ["trafik", "satelit"]  # You can add more modes later
 
-for mode in MODES:
-    try:
-        url = URLS[mode]
-        driver.get(url)
-        time.sleep(5)
-
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"{mode}_{lokasi}_{timestamp}.png"
-        filepath = os.path.join(output_folder, filename)
-
-        driver.save_screenshot(filepath)
-        print(f"✅ Screenshot ({mode}) disimpan: {filepath}")
-
-        # Save metadata to DB
+while True:
+    for mode in MODES:
         try:
-            TrafikSnapshot.objects.create(
-                lokasi=lokasi,
-                masa=timezone.now(),
-                status="Sesak",  # TODO: automate status
-                gambar=os.path.join("images", filename),
-                mode=mode,
-            )
-            print(f"🗂️ Metadata ({mode}) saved to DB.")
-        except Exception as db_error:
-            print(f"❌ DB error ({mode}): {db_error}")
+            url = URLS[mode]
+            driver.get(url)
+            time.sleep(5)
 
-    except Exception as e:
-        print(f"❌ Screenshot error ({mode}): {e}")
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            filename = f"{mode}_{lokasi}_{timestamp}.png"
+            filepath = os.path.join(output_folder, filename)
 
-driver.quit()
+            driver.save_screenshot(filepath)
+            print(f"✅ Screenshot ({mode}) disimpan: {filepath}")
+
+            # Save metadata to DB
+            try:
+                TrafikSnapshot.objects.create(
+                    lokasi=lokasi,
+                    masa=timezone.now(),
+                    status='Sesak',  # You can automate this later
+                    gambar=os.path.join("images", filename),
+                    mode=mode  # Pastikan model ada field 'mode'
+                )
+                print(f"🗂️ Metadata ({mode}) saved to DB.")
+            except Exception as db_error:
+                print(f"❌ DB error ({mode}): {db_error}")
+
+            time.sleep(5)  # Short pause between modes
+
+        except Exception as e:
+            print(f"❌ Screenshot error ({mode}): {e}")
+            time.sleep(60)
+
+    time.sleep(300)  # Wait 5 minutes before next full cycle
