@@ -1,8 +1,11 @@
-name: Screenshot Bot Only
+name: Scheduled Screenshot Bot
 
 on:
+  push:
+    branches:
+      - master
   schedule:
-    - cron: '*/5 * * * *'  # Every 5 minutes
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
   workflow_dispatch:
 
 jobs:
@@ -22,41 +25,31 @@ jobs:
         run: |
           chcp 65001
           echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
-
       - name: Set fallback DATABASE_URL for SQLite
         run: echo "DATABASE_URL=sqlite:///db.sqlite3" >> $GITHUB_ENV
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install --use-deprecated=legacy-resolver -r requirements.txt
           pip install selenium
-
-      - name: Confirm Django install
-        run: python -m django --version
-
-      - name: Set Django settings module
-        run: echo "DJANGO_SETTINGS_MODULE=gps_project.settings" >> $GITHUB_ENV
-
-      - name: Run Django migrations
-        run: python manage.py migrate
-
-      - name: Collect static files (optional)
-        run: python manage.py collectstatic --noinput
-
-      - name: Run screenshot bot
+      - name: Run server + screenshot bot concurrently
         shell: pwsh
         run: |
-          Write-Host "🚦 Running screenshot bot..."
+          Write-Host "🟢 Starting server and bot together..."
+          # Start Django/Flask server in background
+          Start-Job { python manage.py runserver 0.0.0.0:8000 }
+          # Wait a bit to let server boot
+          Start-Sleep -Seconds 10
+          # Run screenshot bot (will run while server is alive)
           python gps_project/screenshots/screenshot_bot.py
-
+          # Stop background job (server) once bot finishes
+          Get-Job | Stop-Job
+          Get-Job | Remove-Job
+          Write-Host "✅ Screenshot bot finished and server stopped."
       - name: List screenshot folder contents
         run: |
           echo "📂 Listing screenshots folder:"
           dir gps_project/screenshots/images
-
       - name: Show screenshot file info
         run: powershell -Command "Get-ChildItem gps_project/screenshots/images | Select-Object Name, Length, LastWriteTime"
 
