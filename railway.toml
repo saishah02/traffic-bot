@@ -3,7 +3,7 @@
 buildCommand = "pip install -r requirements.txt"
 
 # Command to start your bot
-start = "python screenshots/screenshot_bot.py "
+start = "python main.py"
 
 [deploy]
 # Restart the bot automatically if it crashes
