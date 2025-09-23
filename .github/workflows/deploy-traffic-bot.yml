@@ -1,0 +1,26 @@
+name: Deploy Traffic Bot to Railway
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: windows-2022
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli@3.0.8
+
+      - name: Link to Railway project
+        run: railway link YOUR_PROJECT_ID
+
+      - name: Deploy to Railway
+        run: railway up --directory gps_project
