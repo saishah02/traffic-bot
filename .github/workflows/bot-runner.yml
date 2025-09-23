@@ -28,10 +28,10 @@ jobs:
 
       - name: Install Django (just in case)
         run: pip install Django
-        
+
       - name: Install dependencies
         run: |
-          pip install --use-deprecated=legacy-resolver -r requirements.txt
+          pip install --use-deprecated=legacy-resolver -r gps_project/requirements.txt
           pip install selenium
 
       - name: Run screenshot bot
