@@ -46,7 +46,8 @@
                     <div class="image-container">
                         <div class="info"><strong>Lokasi:</strong> ${data.latest_image.lokasi}</div>
                         <div class="info"><strong>Masa:</strong> ${data.latest_image.masa}</div>
-                        <img src="${data.latest_image.filename}?t=${new Date().getTime()}" alt="Trafik ${data.latest_image.lokasi}">
+                        <img src="/media/images/satelit_Seremban_2025-09-25_15-05-27.png?t=" + Date.now() alt="Trafik Seremban">
+
                     </div>
                 `);
                 lastRefresh = Date.now();

@@ -1,37 +1,40 @@
 from django.shortcuts import render
 from django.conf import settings
-import os
 from django.http import JsonResponse
 from .models import TrafikSnapshot
+import os
+import logging
 
-def peta_view(request):
-    return render(request, 'peta.html')
+logger = logging.getLogger(__name__)
 
 def trafik_view(request):
     folder = os.path.join(settings.BASE_DIR, 'screenshots', 'images')
     latest_image = None
 
     if os.path.exists(folder):
-        # Ambil semua fail .png dan susun ikut masa (terbalik = terbaru dulu)
+        # Cari semua fail .png dan susun ikut masa fail (terbalik = terbaru dulu)
         images = sorted(
             [img for img in os.listdir(folder) if img.lower().endswith('.png')],
+            key=lambda x: os.path.getmtime(os.path.join(folder, x)),
             reverse=True
         )
 
         if images:
-            img = images[0]  # ambil fail paling baru
+            img = images[0]
             parts = img.replace('.png', '').split('_')
 
-            # Cuba extract lokasi dan masa, fallback kalau format pelik
             if len(parts) >= 4:
+                mode = parts[0]
                 lokasi = parts[1]
                 masa = parts[2] + ' ' + parts[3].replace('-', ':')
             else:
+                mode = "Tidak diketahui"
                 lokasi = "Tidak diketahui"
                 masa = "Format masa tidak sah"
 
             latest_image = {
-                'filename': os.path.join('images', img),  # relative to MEDIA_URL
+                'filename': os.path.join('images', img),  # relative path for MEDIA_URL
+                'mode': mode,
                 'lokasi': lokasi,
                 'masa': masa
             }
@@ -41,19 +44,19 @@ def trafik_view(request):
         'MEDIA_URL': settings.MEDIA_URL
     })
 
-def latest_image_json(request):
+
+
+def latest_image(request):
     folder = os.path.join(settings.BASE_DIR, 'screenshots', 'images')
     latest_image = None
 
     if os.path.exists(folder):
-        # Ambil semua fail .png dan susun ikut masa fail (terbalik = terbaru dulu)
         images = sorted(
             [img for img in os.listdir(folder) if img.endswith('.png')],
             key=lambda x: os.path.getmtime(os.path.join(folder, x)),
             reverse=True
         )
 
-        # Cari fail pertama yang sah (ada format {uuid}_{mode}.png)
         for img in images:
             parts = img.replace('.png', '').split('_')
             if len(parts) == 2:
@@ -61,19 +64,25 @@ def latest_image_json(request):
                 try:
                     snapshot = TrafikSnapshot.objects.get(id=snapshot_id)
                     latest_image = {
-                        'id': snapshot_id,
+                        'id': snapshot.id,
                         'lokasi': snapshot.lokasi,
                         'masa': snapshot.masa.strftime('%Y-%m-%d %H:%M:%S'),
-           "filename_trafik": f"{snapshot.id}_trafik.png",
-            "filename_satelit": f"{snapshot.id}_satelit.png"
-
+                        'filename_trafik': f"{mode}_{lokasi}_{timestamp}_trafik.png",
+                        'filename_satelit': f"{mode}_{lokasi}_{timestamp}_satelit.png"
                     }
-                    break  # stop after first valid match
+                    break
                 except TrafikSnapshot.DoesNotExist:
-                    continue  # try next image
+                    logger.warning(f"TrafikSnapshot with ID {mode}_{lokasi}_{timestamp} not found.")
+                    continue
 
     return JsonResponse({'latest_image': latest_image})
-   
+
+
 def senarai_trafik(request):
-    snapshots = TrafikSnapshot.objects.order_by('-masa')[:50]
+    try:
+        snapshots = TrafikSnapshot.objects.order_by('-masa')[:50]
+    except Exception as e:
+        logger.error(f"Error fetching snapshots: {e}")
+        snapshots = []
+
     return render(request, 'senarai.html', {'snapshots': snapshots})
