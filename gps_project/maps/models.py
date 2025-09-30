@@ -29,7 +29,7 @@ class TrafikSnapshot(models.Model):
 
     def __str__(self):
         lokasi_display = self.lokasi if self.lokasi else "Lokasi tidak diketahui"
-        masa_display = self.masa.strftime('%Y-%m-%d %H:%M') if self.masa else "(no timestamp)"
+        masa_display = self.masa.strftime('%Y-%m-%d %H:%M:%S') if self.masa else "(no timestamp)"
         return f"{lokasi_display} - {masa_display}"
 
     class Meta:

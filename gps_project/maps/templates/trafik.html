@@ -3,75 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <title>Gambar Trafik Terkini</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <meta http-equiv="refresh" content="300"> <!-- Auto-refresh setiap 5 minit -->
+    <meta http-equiv="refresh" content="300">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background-color: #f9f9f9;
+        :root {
+            --primary-bg: #fff;
+            --nav-bg: #1e2a38;         /* Navy gelap */
+            --nav-hover: #2e3f54;      /* Hover navy cerah */
+            --accent-color: #ffd700;   /* Emas lembut */
+            --overlay-bg: rgba(0, 0, 0, 0.75);
+            --text-light: #fff;
+            --text-dark: #333;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-dark);
         }
-        
-        img {
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 180px;
+            height: 100%;
+            background-color: var(--nav-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding-top: 30px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 16px 24px;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .navbar a:hover {
+            background-color: var(--nav-hover);
+            color: var(--accent-color);
+        }
+
+        .image-container {
+            position: absolute;
+            top: 0;
+            left: 180px;
+            width: calc(100% - 180px);
+            height: 100%;
+        }
+
+        .image-container img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
             display: block;
+        }
+
+        .info-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--overlay-bg);
+            color: var(--text-light);
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.6;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 200px;
+            font-size: 13px;
+            color: #555;
         }
     </style>
 </head>
 <body>
-    <h1>Gambar Trafik Terkini</h1>
+{% load static %}
 
-    {% if latest_image %}
-        <div class="image-container">
-            <div class="info"><strong>Lokasi:</strong> {{ latest_image.lokasi }}</div>
-            <div class="info"><strong>Masa:</strong> {{ latest_image.masa }}</div>
-            <img src="{{ MEDIA_URL }}{{ latest_image.filename }}?v={{ latest_image.masa|slugify }}" alt="Trafik {{ latest_image.lokasi }}">
-        </div>
-    {% else %}
-        <p>Tiada gambar tersedia buat masa ini.</p>
-    {% endif %}
-    <script>
-    let lastRefresh = Date.now();
+<div class="navbar">
+    <a href="{% url 'trafik_view' %}">Trafik</a>
+    <a href="{% url 'satellite_view' %}">Satelit</a>
+    
+</div>
 
-    function updateGambar() {
-        $.getJSON("/latest-image/", function(data) {
-            if (data.latest_image) {
-                $("#gambar-container").html(`
-                    <div class="image-container">
-                        <div class="info"><strong>Lokasi:</strong> ${data.latest_image.lokasi}</div>
-                        <div class="info"><strong>Masa:</strong> ${data.latest_image.masa}</div>
-                        <img src="/media/images/satelit_Seremban_2025-09-25_15-05-27.png?t=" + Date.now() alt="Trafik Seremban">
-
-                    </div>
-                `);
-                lastRefresh = Date.now();
-            } else {
-                $("#gambar-container").html("<p>Tiada gambar tersedia buat masa ini.</p>");
-            }
-        }).fail(function(jqxhr, textStatus, error) {
-            console.log("AJAX error:", textStatus, error);
-            $("#gambar-container").html("<p>Gagal ambil gambar dari server.</p>");
-        });
-    }
-
-    updateGambar(); // initial load
-    setInterval(updateGambar, 300000); // update setiap 5 minit
-
-    document.addEventListener("visibilitychange", function() {
-        if (document.visibilityState === "visible") {
-            const now = Date.now();
-            if (now - lastRefresh > 290000) { // lebih 4 minit 50 saat
-                updateGambar(); // paksa refresh bila balik ke tab
-            }
-        }
-    });
-</script>
-
+{% if latest_image %}
+    <div class="image-container">
+        {% if latest_image.mode == "trafik" %}
+            <div class="info-overlay">
+                <div><strong>Mode:</strong> {{ latest_image.mode }}</div>
+                <div><strong>Lokasi:</strong> {{ latest_image.lokasi }}</div>
+                <div><strong>Masa:</strong> {{ latest_image.masa }}</div>
+                
+                
+                
+            </div>
+            <img src="{% static latest_image.filename %}" alt="Trafik {{ latest_image.lokasi }}">
+        {% else %}
+            <p style="text-align: center; margin-top: 100px;">Gambar bukan mode trafik (mode: {{ latest_image.mode }})</p>
+        {% endif %}
+    </div>
+    
+{% else %}
+    <p style="text-align: center; margin-top: 100px;">Tiada gambar trafik tersedia buat masa ini.</p>
+    
+{% endif %}
 </body>
 </html>

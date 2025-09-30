@@ -55,3 +55,32 @@ jobs:
 
       - name: Print current UTC time
         run: powershell -Command "Get-Date -Format u"
+name: Scheduled Bot Runner
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Setiap jam
+  workflow_dispatch:      # Boleh trigger manual dari GitHub
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run main bot
+      run: python bot.py
+
+    - name: Run screenshot bot
+      run: python screenshots/screenshot_bot.py
+      

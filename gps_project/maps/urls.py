@@ -3,5 +3,9 @@ from . import views
 
 urlpatterns = [
     path('', views.trafik_view, name='trafik'),
-    path('latest-image/', views.latest_image, name='latest_image_json'),
+    path('trafik/', views.trafik_view, name='trafik_view'),
+    path('latest-image/', views.trafik_view, name='latest_image'),
+        path('senarai/', views.senarai_trafik, name='senarai_trafik'),
+    path('satellite/', views.satellite_view, name='satellite_view'),
+    
 ]

@@ -1,82 +1,90 @@
 from django.shortcuts import render
 from django.conf import settings
-from django.http import JsonResponse
-from .models import TrafikSnapshot
+from datetime import datetime
 import os
 import logging
 
 logger = logging.getLogger(__name__)
 
-def trafik_view(request):
-    folder = os.path.join(settings.BASE_DIR, 'screenshots', 'images')
+def get_latest_image_info(mode=None):
+    folder = os.path.join(settings.BASE_DIR, 'maps', 'static', 'images')
     latest_image = None
+    files_info = []
 
     if os.path.exists(folder):
-        # Cari semua fail .png dan susun ikut masa fail (terbalik = terbaru dulu)
         images = sorted(
-            [img for img in os.listdir(folder) if img.lower().endswith('.png')],
+            [img for img in os.listdir(folder)
+             if img.lower().endswith('.png') and (mode is None or img.startswith(mode + "_"))],
             key=lambda x: os.path.getmtime(os.path.join(folder, x)),
             reverse=True
         )
+
+        for img in images:
+            file_path = os.path.join(folder, img)
+            modified = datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
+            size = os.stat(file_path).st_size
+            file_info = {
+                'name': img,
+                'modified': modified,
+                'size': size,
+                'type': 'PNG',
+                'filename': f"images/{img}"
+            }
+            files_info.append(file_info)
 
         if images:
             img = images[0]
             parts = img.replace('.png', '').split('_')
 
             if len(parts) >= 4:
-                mode = parts[0]
+                extracted_mode = parts[0]
                 lokasi = parts[1]
-                masa = parts[2] + ' ' + parts[3].replace('-', ':')
+                date_str = parts[2]
+                time_str = parts[3]
+
+                try:
+                    masa_obj = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H-%M-%S")
+                    masa = masa_obj.strftime('%Y-%m-%d %H:%M:%S')
+                except Exception as e:
+                    logger.warning(f"Invalid date format in filename: {img} → {e}")
+                    masa = f"{date_str} {time_str}"
+
+                latest_image = {
+                    'filename': f"images/{img}",
+                    'lokasi': lokasi,
+                    'masa': masa,
+                    'mode': extracted_mode
+                }
             else:
-                mode = "Tidak diketahui"
-                lokasi = "Tidak diketahui"
-                masa = "Format masa tidak sah"
+                latest_image = {
+                    'filename': f"images/{img}",
+                    'lokasi': "Tidak diketahui",
+                    'masa': "Format masa tidak sah",
+                    'mode': mode or "tidak_dikenalpasti"
+                }
 
-            latest_image = {
-                'filename': os.path.join('images', img),  # relative path for MEDIA_URL
-                'mode': mode,
-                'lokasi': lokasi,
-                'masa': masa
-            }
+    if not latest_image:
+        latest_image = {
+            'filename': 'images/gambar_default.png',
+            'lokasi': 'Fallback',
+            'masa': 'Tidak tersedia',
+            'mode': mode or 'default'
+        }
 
+    return latest_image, files_info
+
+def satellite_view(request):
+    latest_image, _ = get_latest_image_info(mode='satelit')
+    return render(request, 'satellite.html', {'latest_image': latest_image})
+
+def trafik_view(request):
+    latest_image, files_info = get_latest_image_info(mode='trafik')
+
+ 
     return render(request, 'trafik.html', {
         'latest_image': latest_image,
-        'MEDIA_URL': settings.MEDIA_URL
+        'files_info': files_info
     })
-
-
-
-def latest_image(request):
-    folder = os.path.join(settings.BASE_DIR, 'screenshots', 'images')
-    latest_image = None
-
-    if os.path.exists(folder):
-        images = sorted(
-            [img for img in os.listdir(folder) if img.endswith('.png')],
-            key=lambda x: os.path.getmtime(os.path.join(folder, x)),
-            reverse=True
-        )
-
-        for img in images:
-            parts = img.replace('.png', '').split('_')
-            if len(parts) == 2:
-                snapshot_id, mode = parts
-                try:
-                    snapshot = TrafikSnapshot.objects.get(id=snapshot_id)
-                    latest_image = {
-                        'id': snapshot.id,
-                        'lokasi': snapshot.lokasi,
-                        'masa': snapshot.masa.strftime('%Y-%m-%d %H:%M:%S'),
-                        'filename_trafik': f"{mode}_{lokasi}_{timestamp}_trafik.png",
-                        'filename_satelit': f"{mode}_{lokasi}_{timestamp}_satelit.png"
-                    }
-                    break
-                except TrafikSnapshot.DoesNotExist:
-                    logger.warning(f"TrafikSnapshot with ID {mode}_{lokasi}_{timestamp} not found.")
-                    continue
-
-    return JsonResponse({'latest_image': latest_image})
-
 
 def senarai_trafik(request):
     try:
